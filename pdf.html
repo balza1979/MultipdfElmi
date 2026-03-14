@@ -132,7 +132,7 @@ const params = new URLSearchParams(window.location.search);
 const cartella = params.get("cartella");
 
 document.getElementById("titolo").innerHTML =
-    "PDF in: " + cartella + "<br>" +
+    cartella + "<br>" +
     "DESCRIZIONE COMANDI:<br>"  +
     "SE PREMI 'Vedi/Scarica': apre o scarica in base al browser<br>" +
     "SE PREMI 'Vedi Online': visualizza sempre online (necessita circa 5 secondi per controlli)";
