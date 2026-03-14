@@ -18,7 +18,7 @@ h1 {
   text-align: center;
   color: red; 
   font-weight: bold;
-  font-size: 26px;
+  font-size: 40px;
 }
 
 .back-button {
@@ -118,6 +118,14 @@ h1 {
 <a class="back-button" href="index.html">⬅ Torna Indietro</a>
 
 <h1 id="titolo"></h1>
+
+<div id="descrizione" style="
+    text-align:center;
+    color:white;
+    font-size:25px;
+    margin-top:10px;
+    line-height:1.5;
+"></div>
 <div id="pdf-container"></div>
 
 <div id="loadingPopup">
@@ -131,12 +139,12 @@ h1 {
 const params = new URLSearchParams(window.location.search);
 const cartella = params.get("cartella");
 
-document.getElementById("titolo").innerHTML =
-    "PDF in: " + cartella + "<br>" +
-    "DESCRIZIONE COMANDI:" + "<br>"  +
-    "SE PREMI 'Vedi/Scarica': apre o scarica in base al browser<br>" +
-    "SE PREMI 'Vedi Online': visualizza sempre online necessita di 5 secondi per controlli prima di visualizzare ";
+document.getElementById("titolo").innerHTML = cartella;
 
+document.getElementById("descrizione").innerHTML =
+    "<strong>DESCRIZIONE COMANDI:</strong><br>" +
+    "SE PREMI <strong>Vedi/Scarica</strong>: apre o scarica in base al browser<br>" +
+    "SE PREMI <strong>Vedi Online</strong>: visualizza sempre online (necessita di 5 secondi per controlli)";
 fetch("elenco.json")
   .then(r => r.json())
   .then(data => {
