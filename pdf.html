@@ -51,6 +51,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
 }
 
 .card-title {
@@ -59,6 +60,15 @@ h1 {
   color: black;
   max-width: 60%;
   word-break: break-word;
+}
+
+.preview {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid black;
+  background: white;
 }
 
 .button-column {
@@ -126,6 +136,7 @@ h1 {
     margin-top:10px;
     line-height:1.5;
 "></div>
+
 <div id="pdf-container"></div>
 
 <div id="loadingPopup">
@@ -145,51 +156,66 @@ document.getElementById("descrizione").innerHTML =
     "<strong>DESCRIZIONE COMANDI:</strong><br>" +
     "SE PREMI <strong>Vedi/Scarica</strong>: apre o scarica in base al browser<br>" +
     "SE PREMI <strong>Vedi Online</strong>: visualizza sempre online (necessita di 5 secondi per controlli)";
+
 fetch("elenco.json")
   .then(r => r.json())
   .then(data => {
-    const pdfs = data[cartella];
+    const files = data[cartella];
     const container = document.getElementById("pdf-container");
 
-    pdfs.forEach(pdf => {
-      const encodedName = encodeURIComponent(pdf);
+    const imageExt = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+
+    files.forEach(file => {
+      const encodedName = encodeURIComponent(file);
       const encodedFolder = encodeURIComponent(cartella);
 
-      // 🔥 BASE URL AUTOMATICA (funziona con qualsiasi nome progetto)
       const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-
-      // 🔥 URL PDF AUTOMATICO
       const directUrl = `${base}pdf/${encodedFolder}/${encodedName}`;
 
-      // 🔥 GOOGLE VIEWER
+      const isPdf = file.toLowerCase().endsWith(".pdf");
+      const isImage = imageExt.some(ext => file.toLowerCase().endsWith(ext));
+
       const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${directUrl}`;
 
       const card = document.createElement("div");
       card.className = "card";
 
-      card.innerHTML = `
-        <div class="card-title">📄 ${pdf}</div>
-        <div class="button-column">
+      const icon = isPdf ? "📄" : "🖼️";
+
+      let previewHtml = "";
+      if (isImage) {
+        previewHtml = `<img class="preview" src="${directUrl}" alt="preview">`;
+      } else {
+        previewHtml = `<img class="preview" src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg">`;
+      }
+
+      let buttons = "";
+      if (isPdf) {
+        buttons = `
           <button onclick="openFast('${directUrl}')">Vedi/Scarica</button>
           <button onclick="openSafe('${directUrl}', '${gviewUrl}')">Vedi Online</button>
-        </div>
+        `;
+      } else if (isImage) {
+        buttons = `
+          <button onclick="openFast('${directUrl}')">Apri Immagine</button>
+        `;
+      }
+
+      card.innerHTML = `
+        ${previewHtml}
+        <div class="card-title">${icon} ${file}</div>
+        <div class="button-column">${buttons}</div>
       `;
 
       container.appendChild(card);
     });
   });
 
-
-// 🔵 VEDI/SCARICA
 function openFast(url) {
   window.open(url, "_blank");
 }
 
-
-// 🟢 VEDI ONLINE
 function openSafe(directUrl, gviewUrl) {
-
-  // 🔥 loading.html AUTOMATICO
   const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
   const newTab = window.open(base + "loading.html", "_blank");
 
@@ -220,8 +246,6 @@ function openSafe(directUrl, gviewUrl) {
   }, 5000);
 }
 
-
-// Popup
 function showLoading(show, title = "", subtitle = "") {
   const popup = document.getElementById("loadingPopup");
   const sub = document.getElementById("loadingSub");
