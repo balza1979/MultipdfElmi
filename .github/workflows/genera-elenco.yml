@@ -1,4 +1,4 @@
-name: Genera elenco PDF
+name: Genera elenco file
 
 on:
   push:
@@ -17,10 +17,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Genera elenco PDF
+    - name: Genera elenco file (PDF + immagini)
       run: |
         echo "{" > elenco.json
         firstFolder=true
+
+        # Estensioni supportate
+        extensions=("pdf" "jpg" "jpeg" "png" "gif" "webp" "svg")
+
         for folder in pdf/*; do
           if [ -d "$folder" ]; then
             folderName=$(basename "$folder")
@@ -34,18 +38,22 @@ jobs:
             echo -n "  \"${folderName}\": [" >> elenco.json
 
             firstFile=true
-            for file in "$folder"/*.pdf; do
-              if [ -f "$file" ]; then
-                fileName=$(basename "$file")
 
-                if [ "$firstFile" = true ]; then
-                  firstFile=false
-                else
-                  echo -n ", " >> elenco.json
+            # Cerca file con tutte le estensioni
+            for ext in "${extensions[@]}"; do
+              for file in "$folder"/*.$ext; do
+                if [ -f "$file" ]; then
+                  fileName=$(basename "$file")
+
+                  if [ "$firstFile" = true ]; then
+                    firstFile=false
+                  else
+                    echo -n ", " >> elenco.json
+                  fi
+
+                  echo -n "\"${fileName}\"" >> elenco.json
                 fi
-
-                echo -n "\"${fileName}\"" >> elenco.json
-              fi
+              done
             done
 
             echo -n "]" >> elenco.json
@@ -60,5 +68,5 @@ jobs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         git add elenco.json
-        git commit -m "Aggiornato elenco PDF" || echo "Nessuna modifica"
+        git commit -m "Aggiornato elenco file" || echo "Nessuna modifica"
         git push
