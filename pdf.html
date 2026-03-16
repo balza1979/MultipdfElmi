@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>PDF della Cartella</title>
+<title>File della Cartella</title>
 
 <style>
 body {
@@ -18,7 +18,7 @@ h1 {
   text-align: center;
   color: red; 
   font-weight: bold;
-  font-size: 40px;
+  font-size: 26px;
 }
 
 .back-button {
@@ -55,7 +55,7 @@ h1 {
 }
 
 .card-title {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   color: black;
   max-width: 60%;
@@ -75,7 +75,6 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  color: green;
 }
 
 .card button {
@@ -120,6 +119,33 @@ h1 {
 #testFrame {
   display: none;
 }
+
+/* 🔥 ZOOM FULLSCREEN */
+#zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+#zoom-overlay img {
+  max-width: 95%;
+  max-height: 95%;
+  border-radius: 10px;
+  box-shadow: 0 0 20px black;
+  animation: zoomIn 0.25s ease-out;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
 </style>
 </head>
 
@@ -129,15 +155,27 @@ h1 {
 
 <h1 id="titolo"></h1>
 
-<div id="descrizione" style="
-    text-align:center;
-    color:white;
-    font-size:25px;
-    margin-top:10px;
-    line-height:1.5;
-"></div>
+<!-- 🔥 GALLERIA GRANDE (ORA IN ALTO) -->
+<div id="big-gallery" style="display:none; text-align:center; margin-top:40px;">
+    <img id="big-image" src="" onclick="zoomImage()"
+         style="max-width:90%; max-height:500px; border:4px solid white; border-radius:10px; cursor:pointer;">
+    
+    <div style="margin-top:20px;">
+        <button onclick="prevImage()" 
+                style="padding:15px 25px; font-size:22px; margin-right:20px;">⬅ Indietro</button>
 
+        <button onclick="nextImage()" 
+                style="padding:15px 25px; font-size:22px;">Avanti ➡</button>
+    </div>
+</div>
+
+<!-- 🔥 SOTTO LA GALLERIA CI SONO PDF E IMMAGINI -->
 <div id="pdf-container"></div>
+
+<!-- 🔥 OVERLAY PER ZOOM -->
+<div id="zoom-overlay" onclick="closeZoom()">
+    <img id="zoom-img" src="">
+</div>
 
 <div id="loadingPopup">
   ⏳ Caricamento del documento...
@@ -150,12 +188,12 @@ h1 {
 const params = new URLSearchParams(window.location.search);
 const cartella = params.get("cartella");
 
-document.getElementById("titolo").innerHTML = cartella;
+document.getElementById("titolo").innerHTML =
+    "File in: " + cartella + "<br>" +
+    "PDF e Immagini con anteprima";
 
-document.getElementById("descrizione").innerHTML =
-    "<strong>DESCRIZIONE COMANDI:</strong><br>" +
-    "SE PREMI <strong>Vedi/Scarica</strong>: apre o scarica in base al browser<br>" +
-    "SE PREMI <strong>Vedi Online</strong>: visualizza sempre online (necessita di 5 secondi per controlli)";
+let imageList = [];     
+let currentIndex = 0;   
 
 fetch("elenco.json")
   .then(r => r.json())
@@ -163,7 +201,7 @@ fetch("elenco.json")
     const files = data[cartella];
     const container = document.getElementById("pdf-container");
 
-    const imageExt = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    const imageExt = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
     files.forEach(file => {
       const encodedName = encodeURIComponent(file);
@@ -174,6 +212,10 @@ fetch("elenco.json")
 
       const isPdf = file.toLowerCase().endsWith(".pdf");
       const isImage = imageExt.some(ext => file.toLowerCase().endsWith(ext));
+
+      if (isImage) {
+        imageList.push(directUrl);
+      }
 
       const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${directUrl}`;
 
@@ -209,7 +251,38 @@ fetch("elenco.json")
 
       container.appendChild(card);
     });
+
+    if (imageList.length > 0) {
+      document.getElementById("big-gallery").style.display = "block";
+      showImage(0);
+    }
   });
+
+function showImage(index) {
+  currentIndex = index;
+  document.getElementById("big-image").src = imageList[currentIndex];
+}
+
+function nextImage() {
+  currentIndex = (currentIndex + 1) % imageList.length;
+  showImage(currentIndex);
+}
+
+function prevImage() {
+  currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+  showImage(currentIndex);
+}
+
+/* 🔥 ZOOM FULLSCREEN */
+function zoomImage() {
+  const src = document.getElementById("big-image").src;
+  document.getElementById("zoom-img").src = src;
+  document.getElementById("zoom-overlay").style.display = "flex";
+}
+
+function closeZoom() {
+  document.getElementById("zoom-overlay").style.display = "none";
+}
 
 function openFast(url) {
   window.open(url, "_blank");
