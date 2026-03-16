@@ -17,13 +17,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Genera elenco file (PDF + immagini)
+    - name: Genera elenco file (PDF + immagini + video)
       run: |
         echo "{" > elenco.json
         firstFolder=true
 
         # Estensioni supportate
-        extensions=("pdf" "jpg" "jpeg" "png" "gif" "webp" "svg")
+        extensions=("pdf" "jpg" "jpeg" "png" "gif" "webp" "svg" "mp4" "webm" "mov")
 
         for folder in pdf/*; do
           if [ -d "$folder" ]; then
